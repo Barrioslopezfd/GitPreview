@@ -24,8 +24,17 @@ func main(){
 	PORT = "8080"
     }
 
+    var file *Readme
+    file = &Readme{}
+    file.path="./README.md"
+
+    file.updateReadmeContent()
+
+    go file.watchReadme()
+
+
     mux:=http.NewServeMux()
-    mux.Handle("/", http.FileServer(http.Dir(".")))
+    mux.HandleFunc("/", file.serveReadme)
     server:=&http.Server{
         Handler: mux,
         Addr: fmt.Sprintf(":%s",PORT),
