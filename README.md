@@ -9,3 +9,9 @@ You will need go to install this tool:
 ```bash
 go install github.com/Barrioslopezfd/GitPreview@latest
 ```
+
+```go
+func main() {
+    fmt.Println("This is a string")
+}
+```
