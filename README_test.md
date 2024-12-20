@@ -38,9 +38,9 @@
  - 1 Space and list element
 
 ## Unordered list
-- List element
-* List element
-- Space and list element 
+- (-)List element
+* (*)List element
+- (-)Space and list element 
 
 ## Unordered and ordered list 
 - 1(-) element
