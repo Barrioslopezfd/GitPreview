@@ -55,4 +55,4 @@
 84. 3(84) element
 1. 4(1) element
 - 5(-) element
-2. 6(2) element
+2. 6(1) element
