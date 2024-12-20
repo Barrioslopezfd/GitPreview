@@ -7,7 +7,7 @@ import (
 )
 
 func TestGetPort(t *testing.T){
-    t.Run("Manual_Port", func(t *testing.T) {
+    t.Run("ManualPort", func(t *testing.T) {
 	expectedPort := "42069"
 	var expectedErr error = nil
 
@@ -17,7 +17,7 @@ func TestGetPort(t *testing.T){
 	    t.Errorf("Expected port: '%s' -- Got: '%s'\nExpected nil err but got '%s'", expectedPort, got, err.Error())
 	}
     })
-    t.Run("Lower_Port", func(t *testing.T){
+    t.Run("LowerPort", func(t *testing.T){
 	expectedPort := ""
 	expectedErr := errors.New("Can't bind lower ports -- Received: 222")
 
@@ -27,7 +27,7 @@ func TestGetPort(t *testing.T){
 	    t.Errorf("Expected port: '%s' -- Got: '%s'\nExpected err to be '%s' but got '%s'", expectedPort, got, expectedErr.Error(), err.Error())
 	}
     })
-    t.Run("Higher_Port", func(t *testing.T){
+    t.Run("HigherPort", func(t *testing.T){
 	expectedPort := ""
 	expectedErr := errors.New("Can't bind private ports -- Received: 69420")
 

@@ -10,13 +10,14 @@ import (
 	"github.com/fsnotify/fsnotify"
 )
 
-type Readme struct {
+type File struct {
     path    string
     content string
+    html    string
     mu      sync.RWMutex
 }
 
-func (file *Readme) watchReadme() {
+func (f *File) watchReadme() {
     watcher, err := fsnotify.NewWatcher()
     if err != nil {
 	fmt.Printf("Failed creating the watcher: %s", err.Error())
@@ -35,7 +36,7 @@ func (file *Readme) watchReadme() {
 		log.Println("Event: ", event)
 		if event.Has(fsnotify.Rename){
 		    log.Println("README modified, updating content")
-		    file.updateReadmeContent()
+		    f.updateReadmeContent()
 		}
 
 	    case err, ok := <-watcher.Errors:
@@ -47,7 +48,7 @@ func (file *Readme) watchReadme() {
 	}
     }()
 
-    err = watcher.Add(file.path)
+    err = watcher.Add(f.path)
     if err != nil {
 	log.Printf("Failed adding filepath: %s", err.Error())
 	return
@@ -55,26 +56,28 @@ func (file *Readme) watchReadme() {
     <-make(chan struct{})
 }
 
-func (file *Readme) updateReadmeContent() {
-    data, err := os.ReadFile(file.path)
+func (f *File) updateReadmeContent() {
+    data, err := os.ReadFile(f.path)
     if err != nil {
-	log.Printf("Error reading file: %s", err.Error())
+	log.Printf("Error reading f: %s", err.Error())
 	return
     }
 
-    file.mu.Lock()
-    file.content = string(data)
-    file.mu.Unlock()
+    f.mu.Lock()
+    f.content = string(data)
+    f.mu.Unlock()
 }
 
-func (file *Readme) serveReadme(w http.ResponseWriter, _ *http.Request){
-    file.mu.Lock()
-    defer file.mu.Unlock()
+func (f *File) serveReadme(w http.ResponseWriter, _ *http.Request){
+    f.mu.Lock()
+    defer f.mu.Unlock()
 
-    if file.content == "" {
+    if f.content == "" {
         http.Error(w, "File not found", http.StatusNotFound)
         return
     }
-    //TODO:CREATE AN HTML WRITE WITH THE MARKDOWN
-    w.Write([]byte(file.content))
+    f.html = ConvertToHTML(f.content)
+    //TODO:CREATE HTML CONTENT WITH THE MARKDOWN
+    w.Header().Set("Content-Type", "text/html")
+    w.Write([]byte(f.html))
 }

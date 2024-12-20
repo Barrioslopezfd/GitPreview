@@ -12,28 +12,39 @@ go install github.com/Barrioslopezfd/GitPreview@latest
 
 **BOLD ME BEBE**
 
-## Ordered list but it does not start with one 
-84. first element
-85. second element
-87. third element
-
-- List element
-    - TAB and List element
- - Space and list element 
-
-
-- List element
-    - TAB and List element
- - Space and list element 
-
+## Ordered List
 1. Ordered list one 
 2. Ordered list two 
 3. Ordered list three 
 
+## Ordered list
+1. first element
+85. second element
+87. third element
 
+## Ordered list
+1. first element
+2. second element
+87. third element
 
+## Ordered list
+84. first element
+85. second element
+87. third element
 
+## Ordered list
 34. ordered list with weird numbers
-    87. TAB and List element
- 12. Space and list element 
+87. TAB and List element
+12. Space and list element 
 
+## Unordered list
+- List element
+    - TAB and List element
+ - Space and list element 
+
+## Unordered and ordered list 
+- 1 element
+- 2 element
+1. 3 element
+- 4 element
+2. 5 element
