@@ -33,7 +33,14 @@
 ## Unordered list
 - List element
     - TAB and List element
- - Space and list element 
+   - 3 Spaces and list element
+  - 2 Spaces and list element
+ - 1 Space and list element
+
+## Unordered list
+- List element
+* List element
+- Space and list element 
 
 ## Unordered and ordered list 
 - 1(-) element
