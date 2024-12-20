@@ -37,6 +37,11 @@ go install github.com/Barrioslopezfd/GitPreview@latest
 87. 87 element
 12. 12 element
 
+## Ordered list
+34. 34 element
+1. 1 element
+12. 12 element
+
 ## Unordered list
 - List element
     - TAB and List element
@@ -48,3 +53,11 @@ go install github.com/Barrioslopezfd/GitPreview@latest
 1. 3(1) element
 - 4(-) element
 2. 5(2) element
+
+## Unordered and ordered list 
+- 1(-) element
+- 2(-) element
+84. 3(84) element
+1. 4(1) element
+- 5(-) element
+2. 6(2) element
