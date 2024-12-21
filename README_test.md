@@ -48,7 +48,7 @@
 - 2(-) element
 1. 3(1) element
 - 4(-) element
-1. 5(2) element
+1. 5(1) element
 
 ## Unordered and ordered list 
 - 1(-) element
