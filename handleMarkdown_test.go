@@ -1,15 +1,21 @@
 package main
 
 import (
-    "reflect"
-    "testing"
+	"fmt"
+	"reflect"
+	"testing"
 )
 
-func Test_convertLinks(t *testing.T) {
+func checkDiff(want, got, sample string) string {
+	if !reflect.DeepEqual(want, got) {
+		return fmt.Sprintf("\nSample: %s\nWanted %s \nGot: %s", sample, want, got)
+	}
+	return ""
+}
 
-
-    t.Run("Two_Links", func(t *testing.T) {
-markdownExample := `
+func Test_linksOrImgToHtml(t *testing.T) {
+	t.Run("links_to_html", func(t *testing.T) {
+		sample := `
 # Example Markdown
 
 This is a link markdown example:
@@ -25,7 +31,7 @@ This is an img link:
 Text without a link here.
 
 `
-want:=`
+		want := `
 # Example Markdown
 
 This is a link markdown example:
@@ -36,22 +42,63 @@ Another link:
 - <a href="https://github.com">GitHub</a>
 
 This is an img link:
+- ![An Image](https://s3.amazonaws.com/images.seroundtable.com/google-links-1510059186.jpg)
+
+Text without a link here.
+
+`
+		got := linkToHtml(sample)
+
+		diff := checkDiff(want, got, sample)
+		if diff != "" {
+			t.Error(diff)
+		}
+	})
+	t.Run("img_to_html", func(t *testing.T) {
+		sample := `
+# Example Markdown
+
+This is a link markdown example:
+[Google](https://www.google.com)
+
+
+Another link:
+- [GitHub](https://github.com)
+
+This is an img link:
+- ![An Image](https://s3.amazonaws.com/images.seroundtable.com/google-links-1510059186.jpg)
+
+Text without a link here.
+
+`
+		want := `
+# Example Markdown
+
+This is a link markdown example:
+[Google](https://www.google.com)
+
+
+Another link:
+- [GitHub](https://github.com)
+
+This is an img link:
 - <img src="https://s3.amazonaws.com/images.seroundtable.com/google-links-1510059186.jpg" alt="An Image">
 
 Text without a link here.
 
 `
-	got := convertLinks(markdownExample)
+		got := imgToHtml(sample)
 
-	if !reflect.DeepEqual(want, got) {
-	    t.Errorf("Wrong output: Wanted %s -- Got: %s", want, got)
-	}
-    })
+		diff := checkDiff(want, got, sample)
+		if diff != "" {
+			t.Error(diff)
+		}
+	})
 }
 
-func Test_convertBold(t *testing.T) {
-    t.Run("conver_bold", func(t *testing.T){
-	sample:=`
+func Test_boldToHtml(t *testing.T) {
+	t.Run("conver_bold", func(t *testing.T) {
+		sample := `
 This is text with **bold words** and also bold **word**. this is wrong**
 *This should mean nothing*.
 **
@@ -60,7 +107,7 @@ This should also mean nothing**
 This should also mean nothing
 **
 `
-	want:=`
+		want := `
 This is text with <b>bold words</b> and also bold <b>word</b>. this is wrong<b>
 *This should mean nothing*.
 </b>
@@ -69,15 +116,16 @@ This should also mean nothing<b>
 This should also mean nothing
 <b>
 `
-	got:=convertBoldItalic(sample, "**", "<b>")
-	
-	if !reflect.DeepEqual(want, got) {
-	    t.Errorf("\nSample: %s\nWrong output: Wanted %s \nGot: %s",sample, want, got)
-	}
-    })
+		got := boldToHtml(sample)
 
-    t.Run("conver_bold", func(t *testing.T){
-	sample:=`
+		diff := checkDiff(want, got, sample)
+		if diff != "" {
+			t.Error(diff)
+		}
+	})
+
+	t.Run("conver_italic", func(t *testing.T) {
+		sample := `
 This is text with *italic words* and also bold <b>word</b>. this is wrong<b>
 *This is italic*.
 </b>
@@ -86,7 +134,7 @@ This should also mean nothing<b>
 This should also mean nothing
 <b>
 `
-	want:=`
+		want := `
 This is text with <i>italic words</i> and also bold <b>word</b>. this is wrong<b>
 <i>This is italic</i>.
 </b>
@@ -95,10 +143,93 @@ This should also mean nothing<b>
 This should also mean nothing
 <b>
 `
-	got:=convertBoldItalic(sample, "*", "<i>")
-	
-	if !reflect.DeepEqual(want, got) {
-	    t.Errorf("\nSample: %s\nWrong output: Wanted %s \nGot: %s",sample, want, got)
-	}
-    })
+		got := italicToHtml(sample)
+
+		diff := checkDiff(want, got, sample)
+		if diff != "" {
+			t.Error(diff)
+		}
+	})
+}
+
+func Test_allItalicAndBoldToHtml(t *testing.T) {
+	t.Run("Normal string", func(t *testing.T) {
+		sample := `***bold text***`
+		want := `<em><strong>bold text</strong></em>`
+		got := allItalicAndBoldToHtml(sample)
+		diff := checkDiff(want, got, sample)
+		if diff != "" {
+			t.Error(diff)
+		}
+	})
+	t.Run("same line", func(t *testing.T) {
+		sample := `***bold text*** ***more bold text***`
+		want := `<em><strong>bold text</strong></em> <em><strong>more bold text</strong></em>`
+		got := allItalicAndBoldToHtml(sample)
+		diff := checkDiff(want, got, sample)
+		if diff != "" {
+			t.Error(diff)
+		}
+	})
+	t.Run("first space", func(t *testing.T) {
+		sample := `*** bold text***`
+		want := `*** bold text***`
+		got := allItalicAndBoldToHtml(sample)
+		diff := checkDiff(want, got, sample)
+		if diff != "" {
+			t.Error(diff)
+		}
+	})
+	t.Run("second spcae", func(t *testing.T) {
+		sample := `***bold text ***`
+		want := `***bold text ***`
+		got := allItalicAndBoldToHtml(sample)
+		diff := checkDiff(want, got, sample)
+		if diff != "" {
+			t.Error(diff)
+		}
+	})
+	t.Run("line break", func(t *testing.T) {
+		sample := `
+***
+***`
+		want := `
+***
+***`
+		got := allItalicAndBoldToHtml(sample)
+		diff := checkDiff(want, got, sample)
+		if diff != "" {
+			t.Error(diff)
+		}
+	})
+}
+
+func Test_oListToHtml(t *testing.T) {
+	t.Run("Two ordered lists", func(t *testing.T) {
+		sample := `
+2. This should be a 2
+5. This should be a 3
+6. This should be a 4
+List interrupted
+20. This should be a 20
+25. This should be a 21
+`
+		want := `
+<ol>
+    <li value="2">This should be a 2</li>
+    <li>This should be a 3</li>
+    <li>This should be a 4</li>
+</ol>
+List interrupted
+<ol>
+    <li value="20">This should be a 20</li>
+    <li>This should be a 21</li>
+</ol>
+`
+		got := oListToHtml(sample)
+		diff := checkDiff(want, got, sample)
+		if diff != "" {
+			t.Error(diff)
+		}
+	})
 }
