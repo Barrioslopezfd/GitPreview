@@ -77,7 +77,10 @@ func (f *File) serveReadme(w http.ResponseWriter, _ *http.Request) {
 		return
 	}
 	f.ToHTML()
-	//TODO:CREATE HTML CONTENT WITH THE MARKDOWN
+	// TODO:CREATE HTML CONTENT WITH THE MARKDOWN
 	w.Header().Set("Content-Type", "text/html")
-	w.Write([]byte(f.html))
+	_, err := w.Write([]byte(f.html))
+	if err != nil {
+		log.Printf("Error writing header: %s", err.Error())
+	}
 }
