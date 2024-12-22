@@ -5,10 +5,10 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"time"
 )
 
 func main() {
-
 	if len(os.Args) > 2 {
 		log.Fatalf("Too many arguments, expected None or 1 -- Received: %d", len(os.Args))
 	}
@@ -35,8 +35,9 @@ func main() {
 	mux := http.NewServeMux()
 	mux.HandleFunc("/", file.serveReadme)
 	server := &http.Server{
-		Handler: mux,
-		Addr:    fmt.Sprintf(":%s", PORT),
+		Handler:           mux,
+		Addr:              fmt.Sprintf(":%s", PORT),
+		ReadHeaderTimeout: 20 * time.Second,
 	}
 	log.Fatal(server.ListenAndServe())
 }
