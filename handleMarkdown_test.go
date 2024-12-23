@@ -8,9 +8,41 @@ import (
 
 func checkDiff(want, got, sample string) string {
 	if !reflect.DeepEqual(want, got) {
-		return fmt.Sprintf("\nSample: %s\nWanted %s \nGot: %s", sample, want, got)
+		diff := markDiffSpace(want, got)
+		if diff != "" {
+			return fmt.Sprintf(
+				"\nSample: \n%s\nWanted: \n@%s@ \n   Got: \n%s\nDiff:\n%s\n",
+				sample,
+				want,
+				got,
+				diff,
+			)
+		}
+		return fmt.Sprintf(
+			"\nSample: \n%s\nWanted: \n@%s@ \n   Got: \n@%s@",
+			sample,
+			want,
+			got,
+		)
 	}
 	return ""
+}
+
+func markDiffSpace(w, g string) (diff string) {
+	if len(w) != len(g) || len(w) < 1 || len(g) < 1 {
+		return ""
+	}
+	result := []rune(g)
+	s := byte(' ')
+	for idx := range w {
+		if w[idx] == s && g[idx] != s {
+			result[idx] = '@'
+		}
+	}
+	if string(result) == g {
+		return ""
+	}
+	return string(result)
 }
 
 func Test_linksOrImgToHtml(t *testing.T) {
@@ -227,6 +259,20 @@ List interrupted
 </ol>
 `
 		got := oListToHtml(sample)
+		diff := checkDiff(want, got, sample)
+		if diff != "" {
+			t.Error(diff)
+		}
+	})
+}
+
+func Test_uListToHtml(t *testing.T) {
+	t.Run("simple list", func(t *testing.T) {
+		sample := `- <a href="google.com">Google</a>`
+		want := `<ul>
+    <li> <a href="google.com">Google</a></li>
+</ul>`
+		got := uListToHtml(sample)
 		diff := checkDiff(want, got, sample)
 		if diff != "" {
 			t.Error(diff)

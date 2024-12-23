@@ -13,8 +13,9 @@ func (f *File) ToHTML() {
 	content = allItalicAndBoldToHtml(content)
 	content = boldToHtml(content)
 	content = italicToHtml(content)
+	content = oListToHtml(content)
 
-	oListToHtml(content)
+	fmt.Println(content)
 
 	f.html = fmt.Sprintf("<article>%s</article>", content)
 }
@@ -127,6 +128,47 @@ func oListToHtml(content string) (modifiedContent string) {
 		if previousMatch == "" && nextMatch != "" {
 			slicedContent[i] = "<ol>\n    <li value=\"" + currentMatch[:dotIdx] + "\">" + currentMatch[dotIdx+2:] + "</li>"
 			previousMatch = currentMatch
+			continue
+		}
+	}
+	return strings.Join(slicedContent, "\n")
+}
+
+func uListToHtml(content string) (modifiedContent string) {
+	slicedContent := strings.Split(content, "\n")
+	previousMatch := ""
+	for i, line := range slicedContent {
+		re := regexp.MustCompile(`^[-*=]( )+.+ *$`)
+
+		currentMatch := re.FindStringSubmatch(line)
+		nextMatch := ""
+		if i+1 < len(slicedContent) {
+			nextMatch = re.FindString(slicedContent[i+1])
+		}
+		textIdx := len(currentMatch[1])
+
+		if currentMatch[0] == "" {
+			previousMatch = currentMatch[0]
+			continue
+		}
+		if previousMatch != "" && nextMatch != "" {
+			slicedContent[i] = "    <li>" + currentMatch[0][textIdx:] + "</li>"
+			previousMatch = currentMatch[0]
+			continue
+		}
+		if previousMatch == "" && nextMatch == "" {
+			slicedContent[i] = "<ul>\n    <li>" + currentMatch[0][textIdx:] + "</li>\n</ul>"
+			previousMatch = currentMatch[0]
+			continue
+		}
+		if previousMatch != "" && nextMatch == "" {
+			slicedContent[i] = "    <li>" + currentMatch[0][textIdx:] + "</li>\n</ul>"
+			previousMatch = currentMatch[0]
+			continue
+		}
+		if previousMatch == "" && nextMatch != "" {
+			slicedContent[i] = "<ul>\n    <li>" + currentMatch[0][textIdx:] + "</li>"
+			previousMatch = currentMatch[0]
 			continue
 		}
 	}
