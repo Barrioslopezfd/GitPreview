@@ -19,7 +19,7 @@ func (f *File) ToHTML() {
 	f.html = fmt.Sprintf("<article>%s</article>", content)
 }
 
-func matchRegex(regex, content string) [][]string {
+func matchRegex(regex, content string) (matches [][]string) {
 	re := regexp.MustCompile(regex)
 	return re.FindAllStringSubmatch(content, -1)
 }
@@ -61,44 +61,74 @@ func allItalicAndBoldToHtml(content string) (modifiedContent string) {
 }
 
 func italicToHtml(content string) (modifiedContent string) {
-	tag := "<i>"
-	content = strings.Replace(content, "*", tag, -1)
-	index := strings.Index(content, tag)
-	bRepetitions := 0
-	for {
-		bRepetitions += 1
-		if bRepetitions%2 == 0 {
-			content = fmt.Sprintf("%s/%s", content[:index], content[index:])
-		}
-		if strings.Index(content[index+1:], tag) == -1 {
-			break
-		}
-		index = strings.Index(content[index+1:], tag) + len(content[:index+2])
+	matches := matchRegex(`[*]{1}([^ *\n][\w\d ]+[^ *\n])[*]{1}`, content)
+	for _, match := range matches {
+		ogBold := strings.TrimSpace(match[0])
+		boldTag := "<i>" + match[1] + "</i>"
+		content = strings.Replace(content, ogBold, boldTag, 1)
+	}
+	matches = matchRegex(`[_]{1}([^ _\n][\w\d ]+[^ _\n])[_]{1}`, content)
+	for _, match := range matches {
+		ogBold := strings.TrimSpace(match[0])
+		boldTag := "<i>" + match[1] + "</i>"
+		content = strings.Replace(content, ogBold, boldTag, 1)
 	}
 	return content
 }
 
 func boldToHtml(content string) (modifiedContent string) {
-	tag := "<b>"
-	content = strings.Replace(content, "**", tag, -1)
-	content = strings.Replace(content, "__", tag, -1)
-	index := strings.Index(content, tag)
-	bRepetitions := 0
-	for {
-		bRepetitions += 1
-		if bRepetitions%2 == 0 {
-			content = fmt.Sprintf("%s/%s", content[:index], content[index:])
-		}
-		if strings.Index(content[index+1:], tag) == -1 {
-			break
-		}
-		index = strings.Index(content[index+1:], tag) + len(content[:index+2])
+	matches := matchRegex(`[*]{2}([^ *\n][\w\d ]+[^ *\n])[*]{2}`, content)
+	for _, match := range matches {
+		ogBold := strings.TrimSpace(match[0])
+		boldTag := "<b>" + match[1] + "</b>"
+		content = strings.Replace(content, ogBold, boldTag, 1)
+	}
+	matches = matchRegex(`[_]{2}([^ _\n][\w\d ]+[^ _\n])[_]{2}`, content)
+	for _, match := range matches {
+		ogBold := strings.TrimSpace(match[0])
+		boldTag := "<b>" + match[1] + "</b>"
+		content = strings.Replace(content, ogBold, boldTag, 1)
 	}
 	return content
 }
 
 func oListToHtml(content string) (modifiedContent string) {
-	matches := matchRegex(`(\d+\. .+)([\n]\d+\. .+)*`, content)
-	fmt.Println(matches)
-	return content
+	slicedContent := strings.Split(content, "\n")
+	previousMatch := ""
+	for i, line := range slicedContent {
+		re := regexp.MustCompile(`^\d+\. .+ *$`)
+
+		currentMatch := re.FindString(line)
+		nextMatch := ""
+		if i+1 < len(slicedContent) {
+			nextMatch = re.FindString(slicedContent[i+1])
+		}
+		dotIdx := strings.Index(currentMatch, ".")
+
+		if currentMatch == "" {
+			previousMatch = currentMatch
+			continue
+		}
+		if previousMatch != "" && nextMatch != "" {
+			slicedContent[i] = "    <li>" + currentMatch[dotIdx+2:] + "</li>"
+			previousMatch = currentMatch
+			continue
+		}
+		if previousMatch == "" && nextMatch == "" {
+			slicedContent[i] = "<ol>\n    <li value=\"" + currentMatch[:dotIdx] + "\">" + currentMatch[dotIdx+2:] + "</li>\n</ol>"
+			previousMatch = currentMatch
+			continue
+		}
+		if previousMatch != "" && nextMatch == "" {
+			slicedContent[i] = "    <li>" + currentMatch[dotIdx+2:] + "</li>\n</ol>"
+			previousMatch = currentMatch
+			continue
+		}
+		if previousMatch == "" && nextMatch != "" {
+			slicedContent[i] = "<ol>\n    <li value=\"" + currentMatch[:dotIdx] + "\">" + currentMatch[dotIdx+2:] + "</li>"
+			previousMatch = currentMatch
+			continue
+		}
+	}
+	return strings.Join(slicedContent, "\n")
 }

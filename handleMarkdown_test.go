@@ -108,13 +108,13 @@ This should also mean nothing
 **
 `
 		want := `
-This is text with <b>bold words</b> and also bold <b>word</b>. this is wrong<b>
+This is text with <b>bold words</b> and also bold <b>word</b>. this is wrong**
 *This should mean nothing*.
-</b>
-This should also mean nothing<b>
-</b>
+**
+This should also mean nothing**
+**
 This should also mean nothing
-<b>
+**
 `
 		got := boldToHtml(sample)
 
