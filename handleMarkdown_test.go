@@ -279,3 +279,75 @@ func Test_uListToHtml(t *testing.T) {
 		}
 	})
 }
+
+func Test_headerToHtml(t *testing.T) {
+	t.Run("Simple header", func(t *testing.T) {
+		sample := `# Holi`
+		want := `<h1>Holi</h1>`
+		got := headerToHtml(sample)
+		diff := checkDiff(want, got, sample)
+		if diff != "" {
+			t.Error(diff)
+		}
+	})
+	t.Run("2 Headers, one line", func(t *testing.T) {
+		sample := `# Holi # holi`
+		want := `<h1>Holi # holi</h1>`
+		got := headerToHtml(sample)
+		diff := checkDiff(want, got, sample)
+		if diff != "" {
+			t.Error(diff)
+		}
+	})
+	t.Run("2 Headers, 2 lines", func(t *testing.T) {
+		sample := `
+# Hi
+# Bye
+`
+		want := `
+<h1>Hi</h1>
+<h1>Bye</h1>
+`
+		got := headerToHtml(sample)
+		diff := checkDiff(want, got, sample)
+		if diff != "" {
+			t.Error(diff)
+		}
+	})
+	t.Run("H1-6", func(t *testing.T) {
+		sample := `
+# H1
+## H2
+### H3
+#### H4
+##### H5
+###### H6
+`
+		want := `
+<h1>H1</h1>
+<h2>H2</h2>
+<h3>H3</h3>
+<h4>H4</h4>
+<h5>H5</h5>
+<h6>H6</h6>
+`
+		got := headerToHtml(sample)
+		diff := checkDiff(want, got, sample)
+		if diff != "" {
+			t.Error(diff)
+		}
+	})
+	t.Run("3 and 4 spaces before header", func(t *testing.T) {
+		sample := `
+   # H1
+    # This should stay the same`
+		want := `
+<h1>H1</h1>
+    # This should stay the same`
+		got := headerToHtml(sample)
+		diff := checkDiff(want, got, sample)
+		if diff != "" {
+			t.Error(diff)
+		}
+	})
+}
