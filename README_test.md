@@ -1,3 +1,8 @@
+```
+gitpreview --port=<your_port_goes_here>
+```
+
+
 ####
 
 #  
