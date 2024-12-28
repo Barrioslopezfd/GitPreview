@@ -15,8 +15,8 @@ Once installed, the using the tool is as easy as just running the command:
 ```bash
 gitpreview
 ```
-Now you just go to localhost:8080 and BOOM! You README file is there but completly **_htmlified_**
-1. primero item
-3. segundo item
-3.      tercer item
+You can define a specific port with:
+```bash
+gitpreview --port=<Your_port_goes_here>
+```
 
