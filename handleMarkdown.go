@@ -14,8 +14,7 @@ func (f *File) ToHTML() {
 	content = boldToHtml(content)
 	content = italicToHtml(content)
 	content = oListToHtml(content)
-
-	fmt.Println(content)
+	content = headerToHtml(content)
 
 	f.html = fmt.Sprintf("<article>%s</article>", content)
 }
@@ -173,4 +172,67 @@ func uListToHtml(content string) (modifiedContent string) {
 		}
 	}
 	return strings.Join(slicedContent, "\n")
+}
+
+func headerToHtml(content string) (modifiedContent string) {
+	cnt := strings.Split(content, "\n")
+	for _, line := range cnt {
+		if line == "" {
+			continue
+		}
+
+		countSpaces := 0
+		for _, char := range line {
+			if char == ' ' {
+				countSpaces++
+			} else {
+				break
+			}
+		}
+		if countSpaces > 3 {
+			continue
+		}
+
+		countHashes := 0
+		ln := strings.TrimLeft(line, " ")
+		for _, char := range ln {
+			if char == '#' {
+				countHashes++
+			} else {
+				break
+			}
+		}
+		if countHashes < 1 || countHashes > 6 {
+			continue
+		}
+
+		if len(line) == countSpaces+countHashes {
+			content = strings.Replace(content, line, fmt.Sprintf("<h%d></h%d>", countHashes, countHashes), 1)
+			continue
+		}
+
+		if len(line) == countSpaces+countHashes+1 {
+			if line[len(line)] == ' ' {
+				content = strings.Replace(content, line, fmt.Sprintf("<h%d></h%d>", countHashes, countHashes), 1)
+			}
+			continue
+		}
+
+		if line[countSpaces+countHashes] != ' ' {
+			continue
+		}
+
+		content = strings.Replace(content, line, fmt.Sprintf("<h%d>%s</h%d>", countHashes, strings.Trim(line[countHashes+countSpaces:], " "), countHashes), 1)
+	}
+	return content
+}
+
+func codeToHtml(content string) (modifiedContent string) {
+	// TODO: PARAGRAPH LOGIC
+	return content
+}
+
+func paragraphToHtml(content string) (modifiedContent string) {
+	// TODO: PARAGRAPH LOGIC
+	return content
 }
