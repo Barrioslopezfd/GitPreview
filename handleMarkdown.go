@@ -10,11 +10,14 @@ func (f *File) ToHTML() {
 	content := f.content
 	content = imgToHtml(content)
 	content = linkToHtml(content)
+	content = codeToHtml(content)
 	content = allItalicAndBoldToHtml(content)
 	content = boldToHtml(content)
 	content = italicToHtml(content)
 	content = oListToHtml(content)
 	content = headerToHtml(content)
+
+	content = deleteHtmlPlaceholder(content)
 
 	f.html = fmt.Sprintf("<article>%s</article>", content)
 }
@@ -61,33 +64,51 @@ func allItalicAndBoldToHtml(content string) (modifiedContent string) {
 }
 
 func italicToHtml(content string) (modifiedContent string) {
-	matches := matchRegex(`[*]{1}([^ *\n][\w\d ]+[^ *\n])[*]{1}`, content)
-	for _, match := range matches {
-		ogBold := strings.TrimSpace(match[0])
-		boldTag := "<i>" + match[1] + "</i>"
-		content = strings.Replace(content, ogBold, boldTag, 1)
-	}
-	matches = matchRegex(`[_]{1}([^ _\n][\w\d ]+[^ _\n])[_]{1}`, content)
-	for _, match := range matches {
-		ogBold := strings.TrimSpace(match[0])
-		boldTag := "<i>" + match[1] + "</i>"
-		content = strings.Replace(content, ogBold, boldTag, 1)
+	cnt := strings.Split(content, "\n")
+	for _, line := range cnt {
+		if strings.Index(line, "<code>") != -1 {
+			continue
+		}
+		if strings.Index(line, "<!-- -->") != -1 {
+			continue
+		}
+		matches := matchRegex(`[*]{1}([^ *\n][\w\d ]+[^ *\n])[*]{1}`, line)
+		for _, match := range matches {
+			ogBold := strings.TrimSpace(match[0])
+			boldTag := "<i>" + match[1] + "</i>"
+			content = strings.Replace(content, ogBold, boldTag, 1)
+		}
+		matches = matchRegex(`[_]{1}([^ _\n][\w\d ]+[^ _\n])[_]{1}`, line)
+		for _, match := range matches {
+			ogBold := strings.TrimSpace(match[0])
+			boldTag := "<i>" + match[1] + "</i>"
+			content = strings.Replace(content, ogBold, boldTag, 1)
+		}
 	}
 	return content
 }
 
 func boldToHtml(content string) (modifiedContent string) {
-	matches := matchRegex(`[*]{2}([^ *\n][\w\d ]+[^ *\n])[*]{2}`, content)
-	for _, match := range matches {
-		ogBold := strings.TrimSpace(match[0])
-		boldTag := "<b>" + match[1] + "</b>"
-		content = strings.Replace(content, ogBold, boldTag, 1)
-	}
-	matches = matchRegex(`[_]{2}([^ _\n][\w\d ]+[^ _\n])[_]{2}`, content)
-	for _, match := range matches {
-		ogBold := strings.TrimSpace(match[0])
-		boldTag := "<b>" + match[1] + "</b>"
-		content = strings.Replace(content, ogBold, boldTag, 1)
+	cnt := strings.Split(content, "\n")
+	for _, line := range cnt {
+		if strings.Index(line, "<code>") != -1 {
+			continue
+		}
+		if strings.Index(line, "<!-- -->") != -1 {
+			continue
+		}
+		matches := matchRegex(`[*]{2}([^ *\n][\w\d ]+[^ *\n])[*]{2}`, line)
+		for _, match := range matches {
+			ogBold := strings.TrimSpace(match[0])
+			boldTag := "<b>" + match[1] + "</b>"
+			content = strings.Replace(content, ogBold, boldTag, 1)
+		}
+		matches = matchRegex(`[_]{2}([^ _\n][\w\d ]+[^ _\n])[_]{2}`, line)
+		for _, match := range matches {
+			ogBold := strings.TrimSpace(match[0])
+			boldTag := "<b>" + match[1] + "</b>"
+			content = strings.Replace(content, ogBold, boldTag, 1)
+		}
 	}
 	return content
 }
@@ -228,11 +249,39 @@ func headerToHtml(content string) (modifiedContent string) {
 }
 
 func codeToHtml(content string) (modifiedContent string) {
-	// TODO: PARAGRAPH LOGIC
-	return content
+	// TODO: CODE LOGIC
+	cut := strings.Split(content, "```")
+	newContent := ""
+	for idx, elem := range cut {
+		if idx%2 == 0 {
+			newContent += elem
+			continue
+		}
+		s := strings.Split(elem, "\n")
+		for i := range s {
+			s[i] = strings.ReplaceAll(s[i], "<", "&lt;")
+			s[i] = strings.ReplaceAll(s[i], ">", "&gt;")
+			s[i] += "<!-- -->"
+		}
+		elem = strings.Join(s, "\n")
+		if idx < len(cut)-1 {
+			newContent += fmt.Sprintf("<pre><code>\n%s\n</code></pre>", elem)
+		}
+	}
+	return newContent
 }
 
 func paragraphToHtml(content string) (modifiedContent string) {
 	// TODO: PARAGRAPH LOGIC
+
 	return content
+}
+
+func deleteHtmlPlaceholder(content string) (contentWithOutPlaceholder string) {
+	ctn := strings.Split(content, "<!-- -->")
+	newContent := ""
+	for _, part := range ctn {
+		newContent += part
+	}
+	return newContent
 }

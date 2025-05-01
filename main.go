@@ -24,8 +24,7 @@ func main() {
 		PORT = "8080"
 	}
 
-	var file *File
-	file = &File{}
+	file := &File{}
 	file.path = "./README.md"
 
 	file.updateReadmeContent()
